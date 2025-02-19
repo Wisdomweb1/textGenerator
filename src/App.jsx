@@ -61,11 +61,12 @@ const translateText = async (text, sourceLang, targetLang) => {
       `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
     );
     const data = await response.json();
-    
-    console.log("Google Translate Response:", data);
 
-    if (data && data[0] && data[0][0] && data[0][0][0]) {
-      return data[0][0][0]; // Extract translated text
+    console.log("Google Translate Response:", data); // Debugging output
+
+    if (data && data[0]) {
+      // Extract translated text from all segments
+      return data[0].map(segment => segment[0]).join(" ");
     }
   } catch (error) {
     console.error("Translation API failed:", error);
