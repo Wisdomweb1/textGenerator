@@ -30,25 +30,25 @@ const detectLanguage = async (text) => {
 const summarizeText = async (text) => {
   if (!text) return "";
 
-  // Only summarize if text is longer than 150 characters
   if (text.length <= 150) {
-    return text;
+    return text; // No need to summarize short text
   }
 
   if (window.chromeai && window.chromeai.summarize) {
     try {
       const response = await window.chromeai.summarize(text);
       console.log("Summarization API Response:", response);
-
       return response.summary || "Summarization failed.";
     } catch (error) {
       console.error("Summarization failed:", error);
-      return "Summarization error!";
     }
   }
 
-  return text; // Fallback: Return full text if no API
+  // Fallback: Extract first two sentences
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  return sentences.slice(0, 2).join(" ");
 };
+
 
 
 const translateText = async (text, sourceLang, targetLang) => {
