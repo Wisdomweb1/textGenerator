@@ -34,20 +34,56 @@ const summarizeText = async (text) => {
     return text; // No need to summarize short text
   }
 
+  console.log("Original Text:", text); // Debugging Output
+
+  // Try Chrome AI Summarization API first
   if (window.chromeai && window.chromeai.summarize) {
     try {
       const response = await window.chromeai.summarize(text);
-      console.log("Summarization API Response:", response);
-      return response.summary || "Summarization failed.";
+      console.log("Chrome Summarization API Response:", response);
+      
+      if (response && response.summary) {
+        return response.summary;
+      } else {
+        console.warn("Chrome AI did not return a valid summary.");
+      }
     } catch (error) {
-      console.error("Summarization failed:", error);
+      console.error("Chrome AI summarization failed:", error);
     }
   }
 
-  // Fallback: Extract first two sentences
+  // Fallback: Try Hugging Face Summarization API
+  try {
+    const hfResponse = await fetch("https://api-inference.huggingface.co/models/facebook/bart-large-cnn", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer YOUR_HUGGINGFACE_API_KEY`, // Replace with actual API Key
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inputs: text }),
+    });
+
+    const hfData = await hfResponse.json();
+    console.log("Hugging Face Summarization Response:", hfData);
+
+    if (hfData && hfData[0] && hfData[0].summary_text) {
+      return hfData[0].summary_text;
+    } else {
+      console.warn("Hugging Face API did not return a valid summary.");
+    }
+  } catch (error) {
+    console.error("Hugging Face summarization failed:", error);
+  }
+
+  // Final Fallback: Extract First 3 Sentences Manually
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-  return sentences.slice(0, 2).join(" ");
+  const manualSummary = sentences.slice(0, 3).join(" ");
+  console.log("Manual Summary:", manualSummary);
+
+  return manualSummary;
 };
+
+
 
 
 
